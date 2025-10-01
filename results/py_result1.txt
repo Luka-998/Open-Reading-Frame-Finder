@@ -1,0 +1,22 @@
+ATGAAATGAGTAGTAAATGTTTGGGATGTAG
+<class 'Bio.Seq.Seq'>
+Very small ORFs: [{'strand': '+', 'frame': 0, 'start_pos': 0, 'stop_pos': 9, 'start_codon': 'ATG', 'stop_codon': 'TGA', 'len_codons': 2, 'len_codons_nt': 6, 'sequence_codons': ['ATG', 'AAA'], 'complete': True}, {'strand': '+', 'frame': 1, 'start_pos': 16, 'stop_pos': 31, 'start_codon': 'ATG', 'stop_codon': 'TAG', 'len_codons': 4, 'len_codons_nt': 12, 'sequence_codons': ['ATG', 'TTT', 'GGG', 'ATG'], 'complete': True}, {'strand': '+', 'frame': 1, 'start_pos': 25, 'stop_pos': 31, 'start_codon': 'ATG', 'stop_codon': 'TAG', 'len_codons': 1, 'len_codons_nt': 3, 'sequence_codons': ['ATG'], 'complete': True}]
+Total number of frames: [3]
+----------------------------
+Small ORFs:
+ []
+Total number of frames: [0]
+----------------------------
+Long ORFs:
+ []
+Total number of frames: [0]
+----------------------------
+no STOP ORFs:
+ [{'strand': '+', 'frame': 2, 'start_pos': 5, 'stop_pos': None, 'start_codon': 'ATG', 'stop_codon': None, 'len_codons': 13, 'len_codons_nt': 39, 'sequence_codons': ['ATG', 'AGT', 'AGT', 'AAA', 'TGT', 'TTG', 'GGA', 'TGT', 'AGA', 'GAT', 'TCC', 'AAG', 'CGA'], 'complete': False}, {'strand': '+', 'frame': 2, 'start_pos': 20, 'stop_pos': None, 'start_codon': 'TTG', 'stop_codon': None, 'len_codons': 8, 'len_codons_nt': 24, 'sequence_codons': ['TTG', 'GGA', 'TGT', 'AGA', 'GAT', 'TCC', 'AAG', 'CGA'], 'complete': False}]
+Total number of frames: [2]
+----------------------------
+total number of ORFs: 5 of which:
+Very small ORFs: 3
+Small ORFs: 0
+Long ORFs 0
+no STOP ORFs 2
