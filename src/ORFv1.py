@@ -1,22 +1,21 @@
+#!/usr/bin/env python3
 from Bio import Entrez,SeqIO,SeqUtils, SeqRecord
 from Bio.Seq import Seq
 import pandas as pd
 import os
 import numpy as np  
+from pathlib import Path
 
 def load_fasta(path):
+    path=Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f'Fasta file not found: {path}')
     try:
-        with open(path,'r') as f:
-            result = SeqIO.read(f,'fasta')
-            return result.seq #returning seq object
-    except FileNotFoundError:
-        print('Error! Fasta file not found!\nPlease check the file path.')
-        exit()
+        result = SeqIO.read(path,'fasta')
+        return result.seq #returning seq object
     except ValueError:
         print('Error! This file does not appear to be a valid fasta!')
-        exit()
-sequence = load_fasta("C:\\Users\\Admin\\myorf\\test_sequences\\experimental_sequence.txt")
-
+sequence = load_fasta("../test_sequences/experimental_sequence.txt")
 def clean_sequence(seq): # IUPAC nucleotide code [https://www.bioinformatics.org/sms/iupac.html]
         valid_nucleotides = set('TAGC')
         invalid_nucleotides = (set(seq.upper())-valid_nucleotides)
