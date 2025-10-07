@@ -1,24 +1,80 @@
 #!/usr/bin/env python3
-from Bio import Entrez,SeqIO,SeqUtils, SeqRecord
+from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import pandas as pd
 import os
 import numpy as np  
 from pathlib import Path
+import argparse
 
-def load_fasta(path):
-    path=Path(path)
+
+def parser():
+    parser = argparse.ArgumentParser(
+        prog='CLI-find-FASTA',
+        description='Easy to use',
+        usage='CLI friendly argument parser'  
+    )
+    parser.add_argument('--fasta',required=True,help='Required argument for Path to input FASTA') #CLI user input
+    parser.add_argument('--out',required=False,help='Optional arg. to save the output')
+    args=parser.parse_args()
+    return args
+args = parser()
+def get_output_path(args): # User defined. njih samo prosledjujem dole da ih cekiram u sistemu.
+    standard_path_fasta = Path("..")/ "results" / "ORF.fasta"
+    standard_path_summary =  Path("..")/ "results" / "ORF_summary.txt"
+    if args.out:
+        base = Path(args.out)
+        fasta_out = base.with_suffix('.fasta')
+        summary_out = base.with_suffix('.txt')
+        if base.suffix.lower() not in ['.fasta','.fa','.fas']:
+            print('Warning: file may not be a FASTA type.')     
+            if base.exists() and base.is_dir(): #if user provides a dir path, default filename will be used
+                print(f"Defined path {base} is a dir.\nRegular filename {standard_path_fasta} and {standard_path_summary} will be used.\n")
+                return standard_path_summary,standard_path_fasta
+            if base.exists() and base.is_file(): #OVDE SAM STIGAO!
+                print(f"\nPath exists.Do you want to overwrite it? Y/N?") 
+                choice = input().strip().upper()
+                if choice == "Y":
+                    print(f"\File will be saved at \t{fasta_out}|\t{summary_out}.")
+                    return fasta_out,summary_out
+                if choice == "N":
+                    print(f"\nFile will be saved at \t{standard_path_fasta}|\t{standard_path_summary}")
+                    return standard_path_summary,standard_path_fasta
+            if not base.parent.exists(): #--out ..\wtf\text1.txt check if 'wtf' exists (parent)
+                print(f'\nProvided file path: {base.parent} does not exist.\nDo you want me to create directory and file?\tY or N')
+                input2 = str(input()).strip().upper()
+                while input2 not in ("Y","N"):
+                    print("Please choose Y or N only.")
+                    input2 = str(input()).strip().upper()
+                if input2 == "Y": 
+                    base.parent.mkdir(parents=True,exist_ok=True)
+                    print(f" {base} successfully created!")
+                    return base
+                if input2 =="N":
+                    print(f"File will be saved at regular path:\n{standard_path_fasta.parent}")
+                    return standard_path_fasta,standard_path_summary
+            else:
+                print(f"Parent directory {base.parent} exists, file will be created as: {standard_path_fasta.parent}")
+                return standard_path_fasta.parent
+    else:   
+        print(f'\nNo output path provided.\nUsing default: {standard_path_fasta.parent}')
+        return standard_path_fasta.parent
+output_path=get_output_path(args)
+
+def load_fasta(args):
+    path = Path(args.fasta)
     if not path.exists():
-        raise FileNotFoundError(f'Fasta file not found: {path}')
-    try:
-        result = SeqIO.read(path,'fasta')
-        return result.seq #returning seq object
-    except ValueError:
-        print('Error! This file does not appear to be a valid fasta!')
-sequence = load_fasta("../test_sequences/experimental_sequence.txt")
+        print(f"\nFile {path} not Found! Please check path to FASTA again")
+    else:
+        print("File exists, method continues!")
+        sequence = SeqIO.read(path,'fasta')
+        return sequence
+sequence = load_fasta(args)
+
 def clean_sequence(seq): # IUPAC nucleotide code [https://www.bioinformatics.org/sms/iupac.html]
         valid_nucleotides = set('TAGC')
-        invalid_nucleotides = (set(seq.upper())-valid_nucleotides)
+        invalid_nucleotides = (set(str(seq.upper()))-valid_nucleotides)
         cleaned = []
         for nt in seq.upper():
                 if nt in valid_nucleotides:
@@ -120,9 +176,43 @@ def orf_finder(sequence,strand = ['+','-'],info=False):
 
     if info:
         print(f'total number of ORFs: {len(all_orfs)+len(no_stop_orf)} of which:\nVery small ORFs: {len(verysmallORFs)}\nSmall ORFs: {len(smORFs)}\nLong ORFs {len(longORFs)}\nno STOP ORFs {len(no_stop_orf)}')
+        if strand == ['-']:
+            print("Reverse complement generated successfully.")
+
     return all_orfs, no_stop_orf
+
 
     
 if __name__ == "__main__":
-    all_orfs,no_stop_orf = orf_finder(sequence=sequence,strand="+",info=True)
+    standard_path_fasta = Path("..")/ "results" / "ORF.fasta"
+    standard_path_summary =  Path("..")/ "results" / "ORF_summary.txt"
+    all_orfs,no_stop_orf = orf_finder(sequence=sequence,strand="+",info=False)
+    complete_sequence = []
+    sequence_metadata = []
+    
+    for i,orf in enumerate(all_orfs):
+        joined_seq = "".join(orf['sequence_codons'])
+        record_info = ({
+            'seq':orf['sequence_codons'],
+            'label':f'ORF_{i+1}',
+            'strand':orf['strand'],
+            'frame':orf['frame'],
+            'start':orf['start_pos'],
+            'stop':orf['stop_pos'],
+            'len_codons':orf['len_codons'],
+            'complete':orf['complete']
+        }) 
+        sequence_metadata.append(record_info)
+
+        seq_record = SeqRecord(Seq(
+            joined_seq),
+            id = record_info['label'],
+            description=f"strand={record_info['strand']} frame={record_info['frame']} start={record_info['start']} stop={record_info['stop']} len_codons={record_info['len_codons']} complete={record_info['complete']}"
+        )
+        complete_sequence.append(seq_record)
+
+    SeqIO.write(complete_sequence,fasta_output_path,'fasta')
+    with open(summary_output_path,'w') as f1:
+        f1.write(f'Total ORFs: {len(all_orfs)}')
+
 
