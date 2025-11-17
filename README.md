@@ -7,7 +7,7 @@
 - Minimal usage of AI for code writing. Complete code is written by myself
 - AI is used only for synthetic sequence and debugging.
 - Logic of the ORF_finder is related to my knowledge and deep understaning of molecular process in molecular biology.
-- 
+
 
 ### Project overview
 
