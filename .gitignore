@@ -1,0 +1,7 @@
+#GIT IGNORE!
+
+#ignoring venv
+#log
+venv
+.log
+
