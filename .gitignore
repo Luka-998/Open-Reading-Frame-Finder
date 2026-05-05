@@ -3,7 +3,7 @@
 #ignoring venv
 #log
 /venv
-venv
+venv/
 .venv
 .log
 
